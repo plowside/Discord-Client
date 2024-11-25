@@ -101,6 +101,8 @@ class DiscordClient:
     async def handle_message(self, message):
         message_found = False
         for filter_message in messages_to_search:
+            if not (message['guild_id'] == filter_message['guild_id'] and message['channel_id'] == filter_message['channel_id']):
+                continue
             message_content = message['content']
             text_to_search = filter_message['text_to_search']
             if filter_message['search_parameters']['is_lower']:
