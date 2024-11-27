@@ -138,4 +138,7 @@ async def main():
     await client.connect()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    while True:
+        try: asyncio.run(main())
+        except Exception as e:
+            print(f'[-] Глобальная ошибка: type={type(e)}|error={e}')

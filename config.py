@@ -1,4 +1,4 @@
-DISCORD_TOKEN = "420tokentokentokentoken.token.tokentokentokentokentoken" # Токен дискорд аккаунта
+DISCORD_TOKEN = "MTI3ODI2NTEwNzIzNDY4OTA0NA.GVrLfA.sWo9K35eRO2KfJVRqIJC3z-uOs2cu0n-mmXyTY" # Токен дискорд аккаунта
 TELEGRAM_BOT_TOKEN = "7965745832:AAHDi4-p8udr43kMHarW6WwTtfMFPxJiN8o" # Токен телеграм бота, брать у @botfather
 TELEGRAM_USER_IDs = [7538546817] # ID пользователей, которым будут присылаться уведомления (в начале пропиши /start боту)
 messages_to_search = [ # Сообщения для поиска
