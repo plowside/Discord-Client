@@ -12,7 +12,7 @@ class DiscordClient:
         self.user = None
 
     async def connect(self):
-        self.websocket = await websockets.connect(self.DISCORD_GATEWAY)
+        self.websocket = await websockets.connect(self.DISCORD_GATEWAY,max_size=10_485_760)
         await self.identify()
         try:
             await self.listen()
@@ -22,16 +22,21 @@ class DiscordClient:
             raise e
 
     async def identify(self):
-        payload = {"op": 2, "d": {"token": DISCORD_TOKEN, "capabilities": 30717,
-                                  "properties": {"os": "Windows", "browser": "Chrome", "device": "",
-                                                 "system_locale": "ru",
-                                                 "browser_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-                                                 "browser_version": "131.0.0.0", "os_version": "10",
-                                                 "referring_domain": "discord.com", "referrer_current": "",
-                                                 "referring_domain_current": "", "release_channel": "stable",
-                                                 "client_build_number": 347699, "client_event_source": None},
-                                  "presence": {"status": "unknown", "since": 0, "activities": [], "afk": False},
-                                  "compress": False, "client_state": {"guild_versions": {}}}}
+        # payload = {"op": 2, "d": {"token": DISCORD_TOKEN, "capabilities": 30717,
+        #                           "properties": {"os": "Windows", "browser": "Chrome", "device": "",
+        #                                          "system_locale": "ru",
+        #                                          "browser_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        #                                          "browser_version": "131.0.0.0", "os_version": "10",
+        #                                          "referring_domain": "discord.com", "referrer_current": "",
+        #                                          "referring_domain_current": "", "release_channel": "stable",
+        #                                          "client_build_number": 347699, "client_event_source": None},
+        #                           "presence": {"status": "unknown", "since": 0, "activities": [], "afk": False},
+        #                           "compress": False, "client_state": {"guild_versions": {}}}}
+        payload = {"op":2,"d":{"token":DISCORD_TOKEN,"capabilities":1734653,
+                            "properties":{"os":"Windows","browser":"Chrome","device":"","system_locale":"ru","has_client_mods":False,
+                            "browser_user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36","browser_version":"147.0.0.0",
+                            "os_version":"10","referrer":"","referring_domain":"","referrer_current":"","referring_domain_current":"","release_channel":"stable","client_build_number":538030,
+                            "client_event_source":None,"client_launch_id":"7cd736cd-dd9a-4c5b-ae23-77de2930a26c","is_fast_connect":True},"client_state":{"guild_versions":{}}}}
         await self.websocket.send(json.dumps(payload))
 
     async def start_receiving_messages(self):
@@ -50,11 +55,12 @@ class DiscordClient:
     async def listen(self):
         async for message in self.websocket:
             data = json.loads(message)
+            print(data)
 
             if data["op"] == 10:  # HELLO
                 self.heartbeat_interval = data["d"]["heartbeat_interval"]
                 asyncio.create_task(self.heartbeat())
-                asyncio.create_task(self.start_receiving_messages())
+                # asyncio.create_task(self.start_receiving_messages())
 
             elif data['t'] == 'READY':
                 message = data.get('d', {})
@@ -62,7 +68,18 @@ class DiscordClient:
                 if not self.user:
                     print('[-] Не получен юзер, возможно неверный токен либо версия сборки')
                 else:
+                    b = 0
+                    for x in message['read_state']['entries']:
+                        # print(x)
+                        b+=x.get('mention_count',0)
+                    print("BZVZVZV", b)
                     print(f"[+] Вход выполнен как {self.user['username']}#{self.user['discriminator']}")
+                    dms_count = len(message['private_channels'])
+                    guilds_count = len(message['guilds'])
+                    print(f'dms_count: {dms_count} | guilds_count: {guilds_count}')
+                    # await self.websocket.send(json.dumps({"op":3,"d":{"status":"unknown","since":0,"activities":[],"afk":False}}))
+                    # await self.websocket.send(json.dumps({"op":4,"d":{"guild_id":None,"channel_id":None,"self_mute":True,"self_deaf":False,"self_video":False,"flags":2}}))
+                    # await self.websocket.send(json.dumps({"op":3,"d":{"status":"online","since":0,"activities":[],"afk":False}}))
 
             elif data['t'] == 'MESSAGE_CREATE':
                 message = data.get('d', {})
